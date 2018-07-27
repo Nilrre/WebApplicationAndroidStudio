@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,6 +12,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     TestAsync test;
     HashMap<String, String> imagesAndPictures = new HashMap<>();
+    HashMap<Integer, String> numbersAndTitles  = new HashMap<>();
+    ArrayList<Integer> answers = new ArrayList<>();
     Random random = new Random(10);
 
 
@@ -33,12 +37,13 @@ public class MainActivity extends AppCompatActivity {
         test = new TestAsync();
         test.execute("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181");
 
-
+        int x = 0;
         for (Map.Entry<String,String> entry : imagesAndPictures.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
-            Log.d("YEEEEEETTTTTT", key+"-----"+value);
+            numbersAndTitles.put(x++, key);
         }
+
+        shitGameLogic();
 
 
 //        try {
@@ -50,10 +55,30 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
-    public void shitGameLogic()
-    {
-        
+    public void shitGameLogic() {
+        ArrayList<Integer> randomList = randomNumberGenerator();
+        Button b1 = findViewById(R.id.ans1);
+        Button b2 = findViewById(R.id.ans2);
+        Button b3 = findViewById(R.id.ans3);
+        Button b4 = findViewById(R.id.ans4);
+        b1.setText(numbersAndTitles.get(randomList.get(0)));
+        b1.setText(numbersAndTitles.get(randomList.get(1)));
+        b1.setText(numbersAndTitles.get(randomList.get(2)));
+        b1.setText(numbersAndTitles.get(randomList.get(3)));
+
+        answers.add(randomList.get(0));
+
     }
+
+    public ArrayList<Integer> randomNumberGenerator(){
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        for (int i=0; i<11; i++) {
+            list.add(new Integer(i));
+        }
+        Collections.shuffle(list);
+        return list;
+    }
+
 
     private class TestAsync extends AsyncTask<String, Void, String> {
         @Override
