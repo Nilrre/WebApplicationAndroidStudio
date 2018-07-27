@@ -1,29 +1,33 @@
 package com.dunbar.parker.guessinggame;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
-//    DownloadContent downloadContent;
-
     TestAsync test;
     HashMap<String, String> imagesAndPictures = new HashMap<>();
-    HashMap<Integer, String> numbersAndTitles  = new HashMap<>();
+    HashMap<Integer, String> numbersAndTitles = new HashMap<>();
     ArrayList<Integer> answers = new ArrayList<>();
     Random random = new Random(10);
 
@@ -35,25 +39,22 @@ public class MainActivity extends AppCompatActivity {
         Document doc;
 
         test = new TestAsync();
-        test.execute("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181");
+        try {
+            imagesAndPictures = test.execute("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181").get();
+        } catch (InterruptedException | ExecutionException ex) {
+        }
+
 
         int x = 0;
-        for (Map.Entry<String,String> entry : imagesAndPictures.entrySet()) {
+        for (Map.Entry<String, String> entry : imagesAndPictures.entrySet()) {
             String key = entry.getKey();
             numbersAndTitles.put(x++, key);
         }
 
         shitGameLogic();
 
-
-//        try {
-//            URL url = new URL("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181");
-//            downloadContent = new DownloadContent();
-//            downloadContent.execute(url);
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
     }
+
 
     public void shitGameLogic() {
         ArrayList<Integer> randomList = randomNumberGenerator();
@@ -62,17 +63,21 @@ public class MainActivity extends AppCompatActivity {
         Button b3 = findViewById(R.id.ans3);
         Button b4 = findViewById(R.id.ans4);
         b1.setText(numbersAndTitles.get(randomList.get(0)));
-        b1.setText(numbersAndTitles.get(randomList.get(1)));
-        b1.setText(numbersAndTitles.get(randomList.get(2)));
-        b1.setText(numbersAndTitles.get(randomList.get(3)));
+        b2.setText(numbersAndTitles.get(randomList.get(1)));
+        b3.setText(numbersAndTitles.get(randomList.get(2)));
+        b4.setText(numbersAndTitles.get(randomList.get(3)));
 
         answers.add(randomList.get(0));
 
+        String url = imagesAndPictures.get(numbersAndTitles.get(randomList.get(0)));
+        new DownloadImageTask((ImageView) findViewById(R.id.imageView))
+                .execute(url);
+
     }
 
-    public ArrayList<Integer> randomNumberGenerator(){
+    public ArrayList<Integer> randomNumberGenerator() {
         ArrayList<Integer> list = new ArrayList<Integer>();
-        for (int i=0; i<11; i++) {
+        for (int i = 0; i < 11; i++) {
             list.add(new Integer(i));
         }
         Collections.shuffle(list);
@@ -80,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private class TestAsync extends AsyncTask<String, Void, String> {
+    private class TestAsync extends AsyncTask<String, Void, HashMap<String, String>> {
         @Override
-        protected String doInBackground(String... strings) {
+        protected HashMap<String, String> doInBackground(String... strings) {
             Element element = null;
+            HashMap<String, String> iAndP = new HashMap<>();
             try {
                 Document doc = Jsoup.connect("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181").get();
                 element = doc.select("div#article-body").first();
@@ -99,88 +105,39 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 for (int i = 2; i < list.size(); i++) {
-                    imagesAndPictures.put(list.get(i).text().substring(3).trim(), images.get(i).substring(73, images.get(i).length() - 84));
+                    iAndP.put(list.get(i).text().substring(3).trim(), images.get(i).substring(73, images.get(i).length() - 84));
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            return element.text();
+            return iAndP;
         }
     }
 
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
 
-//    private String downloadUrl(URL url) throws IOException {
-//        InputStream stream = null;
-//        HttpURLConnection connection = null;
-//        String result = null;
-//        try {
-//            connection = (HttpsURLConnection) url.openConnection();
-//            connection.setReadTimeout(3000);
-//            connection.setConnectTimeout(30000);
-//            connection.setRequestMethod("GET");
-//            connection.setDoInput(true);
-//            connection.connect();
-//            int responseCode = connection.getResponseCode();
-//            if (responseCode != HttpsURLConnection.HTTP_OK) {
-//                throw new IOException("HTTP error code: " + responseCode);
-//            }
-//            // Retrieve the response body as an InputStream.
-//            stream = connection.getInputStream();
-//            if (stream != null) {
-//                // Converts Stream to String with max length of 500.
-////                result = readStream(stream, 100000);
-//            }
-//        }catch (Exception e) {
-//            System.out.println(e.toString());
-//        } finally {
-//            // Close Stream and disconnect HTTPS connection.
-//            if (stream != null) {
-//                stream.close();
-//            }
-//            if (connection != null) {
-//                connection.disconnect();
-//            }
-//        }
-//        return result;
-//    }
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
 
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
 
-//    public String readStream(InputStream stream, int maxReadSize) throws IOException, UnsupportedEncodingException {
-//        Reader reader = null;
-//        reader = new InputStreamReader(stream, "UTF-8");
-//        char[] rawBuffer = new char[maxReadSize];
-//        int readSize;
-//        StringBuffer buffer = new StringBuffer();
-//        while (((readSize = reader.read(rawBuffer)) != -1) && maxReadSize > 0) {
-//            if (readSize > maxReadSize) {
-//                readSize = maxReadSize;
-//            }
-//            buffer.append(rawBuffer, 0, readSize);
-//            maxReadSize -= readSize;
-//        }
-//        return buffer.toString();
-//    }
-
-
-//    private class DownloadContent extends AsyncTask<URL, Void, String> {
-//        @Override
-//        protected String doInBackground(URL... urls) {
-//            String result = "";
-//            try {
-//                result = downloadUrl(urls[0]);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return result;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String results) {
-//            Log.d("LENGTH", "" + results.length());
-//            Log.d("TEST", results);
-//            parseResults(results);
-//        }
-//    }
-
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
 }
+
