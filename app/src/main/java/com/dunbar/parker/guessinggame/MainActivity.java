@@ -1,38 +1,31 @@
 package com.dunbar.parker.guessinggame;
 
 import android.os.AsyncTask;
-import android.renderscript.ScriptGroup;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Xml;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.util.Map;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 //    DownloadContent downloadContent;
 
     TestAsync test;
+    HashMap<String, String> imagesAndPictures = new HashMap<>();
+    Random random = new Random(10);
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)  {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Document doc;
@@ -41,7 +34,11 @@ public class MainActivity extends AppCompatActivity {
         test.execute("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181");
 
 
-
+        for (Map.Entry<String,String> entry : imagesAndPictures.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            Log.d("YEEEEEETTTTTT", key+"-----"+value);
+        }
 
 
 //        try {
@@ -53,42 +50,39 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
-        private class TestAsync extends AsyncTask<String, Void, String> {
+    public void shitGameLogic()
+    {
+        
+    }
+
+    private class TestAsync extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strings) {
             Element element = null;
             try {
                 Document doc = Jsoup.connect("https://www.pcauthority.com.au/news/top-10-computer-games-of-all-time-170181").get();
                 element = doc.select("div#article-body").first();
-                Log.d("TEST", element.text());
 
                 List<Element> list = element.select("b");
-                for(Element e : list) {
-                    Log.d("TAGS",e.text());
-                }
-
                 List<Element> image_list = element.select("a");
                 List<String> images = new ArrayList<String>();
-                for(Element e : image_list) {
+                for (Element e : image_list) {
                     String link = e.html().toString();
-                    if(link.contains("img")) {
+                    if (link.contains("img")) {
                         images.add(link);
                     }
                 }
-                for(String e : images) {
-                    Log.d("TAGS",e);
+
+                for (int i = 2; i < list.size(); i++) {
+                    imagesAndPictures.put(list.get(i).text().substring(3).trim(), images.get(i).substring(73, images.get(i).length() - 84));
                 }
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             return element.text();
         }
-
     }
-
-
 
 
 //    private String downloadUrl(URL url) throws IOException {
@@ -125,8 +119,6 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //        return result;
 //    }
-
-
 
 
 //    public String readStream(InputStream stream, int maxReadSize) throws IOException, UnsupportedEncodingException {
