@@ -1,5 +1,6 @@
 package com.dunbar.parker.guessinggame;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     HashMap<String, String> imagesAndPictures = new HashMap<>();
     HashMap<Integer, String> numbersAndTitles = new HashMap<>();
     ArrayList<Integer> answers = new ArrayList<>();
+    int totalScore;
 
 
     @Override
@@ -58,23 +60,32 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void shitGameLogic() {
-        ArrayList<Integer> randomList = randomNumberGenerator();
-
-        Button b1 = findViewById(R.id.ans1);
-        Button b2 = findViewById(R.id.ans2);
-        Button b3 = findViewById(R.id.ans3);
-        Button b4 = findViewById(R.id.ans4);
-        b1.setText(numbersAndTitles.get(randomList.get(0)));
-        b2.setText(numbersAndTitles.get(randomList.get(1)));
-        b3.setText(numbersAndTitles.get(randomList.get(2)));
-        b4.setText(numbersAndTitles.get(randomList.get(3)));
-        answers.add(randomList.get(0));
-        String url = imagesAndPictures.get(numbersAndTitles.get(randomList.get(0)));
+        if(answers.size() < 10) {
+            ArrayList<Integer> randomList = randomNumberGenerator();
+            while (answers.contains(randomList.get(0))) {
+                randomList = randomNumberGenerator();
+            }
 
 
-        new DownloadImageTask((ImageView) findViewById(R.id.imageView)).execute(url);
+            Button b1 = findViewById(R.id.ans1);
+            Button b2 = findViewById(R.id.ans2);
+            Button b3 = findViewById(R.id.ans3);
+            Button b4 = findViewById(R.id.ans4);
+            b1.setText(numbersAndTitles.get(randomList.get(0)));
+            b2.setText(numbersAndTitles.get(randomList.get(1)));
+            b3.setText(numbersAndTitles.get(randomList.get(2)));
+            b4.setText(numbersAndTitles.get(randomList.get(3)));
+            answers.add(randomList.get(0));
+            String url = imagesAndPictures.get(numbersAndTitles.get(randomList.get(0)));
 
+            new DownloadImageTask((ImageView) findViewById(R.id.imageView)).execute(url);
+        }
+        else{
+            Intent intent = new Intent(MainActivity.this, EndGameActivity.class);
+            intent.putExtra("score", totalScore);
+            startActivity(intent);
 
+        }
     }
 
 
@@ -88,11 +99,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void correctAnswer(View v) {
+        totalScore += 5;
         Toast.makeText(this, "Correct Answer", Toast.LENGTH_SHORT).show();
         shitGameLogic();
     }
 
     public void incorrectAnswer(View view) {
+        totalScore -= 1;
         Toast.makeText(this, "Incorrect Answer", Toast.LENGTH_SHORT).show();
     }
 
