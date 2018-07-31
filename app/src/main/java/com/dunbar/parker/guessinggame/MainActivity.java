@@ -2,12 +2,15 @@ package com.dunbar.parker.guessinggame;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 import org.jsoup.Jsoup;
@@ -29,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
     HashMap<String, String> imagesAndPictures = new HashMap<>();
     HashMap<Integer, String> numbersAndTitles = new HashMap<>();
     ArrayList<Integer> answers = new ArrayList<>();
-    Random random = new Random(10);
 
 
     @Override
@@ -44,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException | ExecutionException ex) {
         }
 
-
         int x = 0;
         for (Map.Entry<String, String> entry : imagesAndPictures.entrySet()) {
             String key = entry.getKey();
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void shitGameLogic() {
         ArrayList<Integer> randomList = randomNumberGenerator();
+
         Button b1 = findViewById(R.id.ans1);
         Button b2 = findViewById(R.id.ans2);
         Button b3 = findViewById(R.id.ans3);
@@ -66,24 +68,33 @@ public class MainActivity extends AppCompatActivity {
         b2.setText(numbersAndTitles.get(randomList.get(1)));
         b3.setText(numbersAndTitles.get(randomList.get(2)));
         b4.setText(numbersAndTitles.get(randomList.get(3)));
-
         answers.add(randomList.get(0));
-
         String url = imagesAndPictures.get(numbersAndTitles.get(randomList.get(0)));
-        new DownloadImageTask((ImageView) findViewById(R.id.imageView))
-                .execute(url);
+
+
+        new DownloadImageTask((ImageView) findViewById(R.id.imageView)).execute(url);
+
 
     }
 
+
     public ArrayList<Integer> randomNumberGenerator() {
         ArrayList<Integer> list = new ArrayList<Integer>();
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 10; i++) {
             list.add(new Integer(i));
         }
         Collections.shuffle(list);
         return list;
     }
 
+    public void correctAnswer(View v) {
+        Toast.makeText(this, "Correct Answer", Toast.LENGTH_SHORT).show();
+        shitGameLogic();
+    }
+
+    public void incorrectAnswer(View view) {
+        Toast.makeText(this, "Incorrect Answer", Toast.LENGTH_SHORT).show();
+    }
 
     private class TestAsync extends AsyncTask<String, Void, HashMap<String, String>> {
         @Override
